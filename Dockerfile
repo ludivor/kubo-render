@@ -16,6 +16,7 @@ ipfs config --json Swarm.ConnMgr.HighWater 30
 ipfs config Swarm.ConnMgr.GracePeriod 30s
 ipfs config Swarm.ResourceMgr.MaxMemory 256MB
 ipfs config --json Gateway.ExposeRoutingAPI false
+ipfs config --json Discovery.MDNS.Enabled false
 
 # El gateway (sin protección) queda solo dentro del contenedor
 ipfs config Addresses.Gateway /ip4/127.0.0.1/tcp/8080
