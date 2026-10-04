@@ -1,17 +1,35 @@
-FROM ipfs/kubo:latest
+# syntax=docker/dockerfile:1
+FROM ipfs/kubo:v0.43.1
 
-ENV IPFS_PROFILE=lowpower,server
-ENV PORT=8080
+ENV IPFS_PROFILE=lowpower,server \
+    PORT=5001
 
-RUN mkdir -p /container-init.d && \
-    printf '%s\n' \
-      '#!/bin/sh' \
-      'ipfs config --json Swarm.RelayService.Enabled false' \
-      'ipfs config --json Swarm.RelayClient.Enabled false' \
-      'ipfs config --json Swarm.DisableNatPortMap true' \
-      'ipfs config --json Swarm.ConnMgr.LowWater 10' \
-      'ipfs config --json Swarm.ConnMgr.HighWater 30' \
-      'ipfs config Swarm.ConnMgr.GracePeriod 30s' \
-      'ipfs config Swarm.ResourceMgr.MaxMemory 256MB' \
-      > /container-init.d/001-lowbandwidth.sh && \
-    chmod 755 /container-init.d/001-lowbandwidth.sh
+COPY --chmod=755 <<"EOF" /container-init.d/001-config.sh
+#!/bin/sh
+
+# Reducir tráfico
+ipfs config --json Swarm.RelayService.Enabled false
+ipfs config --json Swarm.RelayClient.Enabled false
+ipfs config --json Swarm.DisableNatPortMap true
+ipfs config --json Swarm.ConnMgr.LowWater 10
+ipfs config --json Swarm.ConnMgr.HighWater 30
+ipfs config Swarm.ConnMgr.GracePeriod 30s
+ipfs config Swarm.ResourceMgr.MaxMemory 256MB
+ipfs config --json Gateway.ExposeRoutingAPI false
+
+# El gateway (sin protección) queda solo dentro del contenedor
+ipfs config Addresses.Gateway /ip4/127.0.0.1/tcp/8080
+
+# API pública, pero solo con token y solo comandos de lectura
+if [ -z "$GATEWAY_TOKEN" ]; then
+  echo "ERROR: falta GATEWAY_TOKEN"
+  exit 1
+fi
+ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
+ipfs config --json API.Authorizations "{
+  \"script\": {
+    \"AuthSecret\": \"bearer:$GATEWAY_TOKEN\",
+    \"AllowedPaths\": [\"/api/v0/cat\", \"/api/v0/ls\"]
+  }
+}"
+EOF
