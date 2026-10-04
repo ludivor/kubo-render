@@ -1,6 +1,7 @@
 FROM ipfs/kubo:latest
 
 ENV IPFS_PROFILE=lowpower,server
+ENV PORT=8080
 
 RUN mkdir -p /container-init.d && \
     printf '%s\n' \
