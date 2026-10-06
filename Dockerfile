@@ -17,12 +17,12 @@ ipfs config --json Gateway.ExposeRoutingAPI false
 # --- 2. Desactivación de servicios Relay y Hole Punching ---
 ipfs config --json Swarm.RelayService.Enabled false
 ipfs config --json Swarm.RelayClient.Enabled false
-ipfs config --json AutoRelay.Enabled false
+ipfs config --json AutoRelay '{"Enabled": false}'
 ipfs config --json Swarm.EnableHolePunching false
 
 # --- 3. Optimización del protocolo DHT (Modo Cliente) ---
 ipfs config Routing.Type dhtclient
-ipfs config Provide.DHT.Interval 0s
+ipfs config --json Provide.Enabled false
 ipfs config AutoNAT.ServiceMode disabled
 ipfs config --json Routing.AcceleratedDHTClient false
 
