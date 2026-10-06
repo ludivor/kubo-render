@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM ipfs/kubo:v0.43.1
+FROM ipfs/kubo:latest
+#FROM ipfs/kubo:v0.43.1
 
 ENV IPFS_PROFILE=lowpower,server \
     PORT=5001
