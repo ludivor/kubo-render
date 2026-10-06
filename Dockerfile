@@ -6,17 +6,30 @@ ENV IPFS_PROFILE=lowpower,server \
 
 COPY --chmod=755 <<"EOF" /container-init.d/001-config.sh
 #!/bin/sh
+# ------------------INICIO------------------Reducir tráfico
+# --- 1. Ajustes de recursos y red local ---
+ipfs config Swarm.ResourceMgr.MaxMemory 256MB
+ipfs config Swarm.ConnMgr.GracePeriod 30s
+ipfs config --json Swarm.DisableNatPortMap true
+ipfs config --json Discovery.MDNS.Enabled false
+ipfs config --json Gateway.ExposeRoutingAPI false
 
-# Reducir tráfico
+# --- 2. Desactivación de servicios Relay y Hole Punching ---
 ipfs config --json Swarm.RelayService.Enabled false
 ipfs config --json Swarm.RelayClient.Enabled false
-ipfs config --json Swarm.DisableNatPortMap true
-ipfs config --json Swarm.ConnMgr.LowWater 10
-ipfs config --json Swarm.ConnMgr.HighWater 30
-ipfs config Swarm.ConnMgr.GracePeriod 30s
-ipfs config Swarm.ResourceMgr.MaxMemory 256MB
-ipfs config --json Gateway.ExposeRoutingAPI false
-ipfs config --json Discovery.MDNS.Enabled false
+ipfs config --json Swarm.EnableAutoRelay false
+ipfs config --json Swarm.EnableHolePunching false
+
+# --- 3. Optimización del protocolo DHT (Modo Cliente) ---
+ipfs config Routing.Type dhtclient
+ipfs config Reprovider.Interval 0s
+ipfs config AutoNAT.ServiceMode disabled
+ipfs config --json Routing.AcceleratedDHTClient false
+
+# --- 4. Límites estrictos de conexiones (5 a 15 nodos) ---
+ipfs config --json Swarm.ConnMgr.LowWater 5
+ipfs config --json Swarm.ConnMgr.HighWater 15
+# ------------------FIN------------------ Reducir tráfico
 
 # El gateway (sin protección) queda solo dentro del contenedor
 ipfs config Addresses.Gateway /ip4/127.0.0.1/tcp/8080
